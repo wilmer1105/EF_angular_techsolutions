@@ -1,0 +1,73 @@
+<div class="container-fluid mt-4 px-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="text-dark fw-bold m-0">Mi Área de Trabajo - Técnico</h2>
+      <small class="text-muted fs-6">Especialista: <strong class="text-primary">{{ nombreTecnico }}</strong></small>
+    </div>
+    <span class="badge bg-primary p-2 fs-6">Soporte Operativo</span>
+  </div>
+
+  <div *ngIf="mensajeExito" class="alert alert-success shadow-sm" role="alert">
+    {{ mensajeExito }}
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-dark text-white py-3">
+      <h5 class="card-title mb-0 fw-semibold">Tickets Asignados a mi Perfil</h5>
+    </div>
+    
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light text-secondary">
+            <tr>
+              <th>Ticket ID</th>
+              <th>Fecha Asignación</th>
+              <th>Detalles del Problema</th>
+              <th>Instrucciones del Admin</th>
+              <th style="width: 200px;">Actualizar Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let asig of asignaciones">
+              <td class="fw-bold">#{{ asig.incidencia?.id_incidencia }}</td>
+              <td>{{ asig.fecha_asignacion | date:'dd/MM/yyyy HH:mm' }}</td>
+              
+              <td>
+                <div class="fw-semibold text-dark">{{ asig.incidencia?.titulo }}</div>
+                <small class="text-muted">{{ asig.incidencia?.descripcion }}</small>
+                <div class="mt-1">
+                  <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill">
+                    Prioridad: {{ asig.incidencia?.prioridad?.nombre_prioridad }}
+                  </span>
+                </div>
+              </td>
+              
+              <td>
+                <div class="bg-light p-2 rounded text-secondary small fst-italic border">
+                  "{{ asig.observacion || 'Sin instrucciones adicionales' }}"
+                </div>
+              </td>
+              
+              <td>
+                <select class="form-select form-select-sm border-primary fw-semibold" 
+                        [ngModel]="asig.incidencia?.estado?.id_estado" 
+                        (change)="cambiarEstado(asig.incidencia?.id_incidencia, $event)">
+                  <option *ngFor="let est of estadosDisponibles" [value]="est.id">
+                    {{ est.nombre }}
+                  </option>
+                </select>
+              </td>
+            </tr>
+            <tr *ngIf="asignaciones.length === 0">
+              <td colspan="5" class="text-center text-muted py-5">
+                <i class="fs-4 mb-2 d-block">☕</i>
+                No tienes incidencias pendientes por resolver.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

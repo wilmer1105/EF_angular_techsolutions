@@ -1,15 +1,38 @@
-<div class="container-fluid mt-4 px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-dark fw-bold m-0">Panel de Administración - Soporte IT</h2>
-        <span class="badge bg-secondary p-2 fs-6">TechSolutions Perú</span>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm px-4 py-3 mb-4 rounded-bottom">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary" href="#">TechSolutions Portal</a>
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <span class="text-light">Bienvenido(a), <strong class="text-warning">{{ nombreAdmin }}</strong>
+                (Admin)</span>
+            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" (click)="cerrarSesion()">
+                Cerrar Sesión
+            </button>
+        </div>
     </div>
+</nav>
+
+<div class="container-fluid px-4">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" [class.active]="vistaActiva === 'incidencias'" href="javascript:void(0)"
+                (click)="cambiarVista('incidencias')">Incidencias</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" [class.active]="vistaActiva === 'usuarios'" href="javascript:void(0)"
+                (click)="cambiarVista('usuarios')">Gestión de Usuarios</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" [class.active]="vistaActiva === 'reportes'" href="javascript:void(0)"
+                (click)="cambiarVista('reportes')">Reportes</a>
+        </li>
+    </ul>
 
     <div *ngIf="mensajeExito" class="alert alert-success shadow-sm" role="alert">
         {{ mensajeExito }}
     </div>
 
-    <div class="row g-4">
-        <!-- Tabla Principal de Incidencias -->
+    <!-- ===================== VISTA: INCIDENCIAS ===================== -->
+    <div *ngIf="vistaActiva === 'incidencias'" class="row g-4">
         <div class="col-12" [ngClass]="{'col-lg-8': incidenciaSeleccionada}">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-dark text-white py-3">
@@ -21,9 +44,10 @@
                             <thead class="table-light text-secondary">
                                 <tr>
                                     <th>ID</th>
-                                    <th>Usuario / Empleado</th>
-                                    <th>Título del Incidente</th>
-                                    <th>Prioridad</th>
+                                    <th>Usuario Empleado</th>
+                                    <th>Título / Incidente</th>
+                                    <th>Editar Gravedad</th>
+                                    <th>Técnico Asignado</th>
                                     <th>Estado</th>
                                     <th class="text-center">Acciones</th>
                                 </tr>
@@ -32,24 +56,32 @@
                                 <tr *ngFor="let inc of incidencias">
                                     <td class="fw-bold">#{{ inc.id_incidencia }}</td>
                                     <td>
-                                        <!-- Añadido el operador ? para prevenir caídas si el usuario es null -->
                                         <div class="fw-semibold">{{ inc.usuario?.nombres }} {{ inc.usuario?.apellidos }}
                                         </div>
-                                        <small class="text-muted">{{ inc.usuario?.correo }}</small>
                                     </td>
                                     <td>{{ inc.titulo }}</td>
+
                                     <td>
-                                        <!-- Añadido el operador ? en prioridad -->
-                                        <span class="badge" [ngClass]="{
-                        'bg-danger': inc.prioridad?.nombre_prioridad === 'Crítica' || inc.prioridad?.nombre_prioridad === 'Alta',
-                        'bg-warning text-dark': inc.prioridad?.nombre_prioridad === 'Media',
-                        'bg-success': inc.prioridad?.nombre_prioridad === 'Baja'
-                      }">
-                                            {{ inc.prioridad?.nombre_prioridad || 'No asignada' }}
+                                        <select
+                                            class="form-select form-select-sm border-secondary fw-semibold text-dark"
+                                            [ngModel]="inc.prioridad?.id_prioridad"
+                                            (change)="cambiarGravedad(inc.id_incidencia, $event)">
+                                            <option *ngFor="let prio of listaPrioridades" [value]="prio.id">
+                                                {{ prio.nombre }}
+                                            </option>
+                                        </select>
+                                    </td>
+
+                                    <td>
+                                        <span *ngIf="inc.tecnico" class="text-dark fw-semibold">
+                                            {{ inc.tecnico?.nombres }} {{ inc.tecnico?.apellidos }}
+                                        </span>
+                                        <span *ngIf="!inc.tecnico" class="text-muted fst-italic small">
+                                            ❌ Sin asignar
                                         </span>
                                     </td>
+
                                     <td>
-                                        <!-- Añadido el operador ? en estado -->
                                         <span class="badge rounded-pill" [ngClass]="{
                         'bg-secondary': inc.estado?.nombre_estado === 'Pendiente',
                         'bg-primary': inc.estado?.nombre_estado === 'Asignada',
@@ -57,20 +89,16 @@
                         'bg-success': inc.estado?.nombre_estado === 'Resuelta',
                         'bg-dark': inc.estado?.nombre_estado === 'Cerrada'
                       }">
-                                            {{ inc.estado?.nombre_estado || 'Desconocido' }}
+                                            {{ inc.estado?.nombre_estado }}
                                         </span>
                                     </td>
                                     <td class="text-center">
                                         <button class="btn btn-sm btn-outline-primary px-3 rounded-pill"
                                             [disabled]="inc.estado?.id_estado !== 1"
                                             (click)="seleccionarIncidencia(inc)">
-                                            Asignar Técnico
+                                            Asignar
                                         </button>
                                     </td>
-                                </tr>
-                                <tr *ngIf="incidencias.length === 0">
-                                    <td colspan="6" class="text-center text-muted py-4">No se registran incidencias en
-                                        el sistema.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -123,6 +151,160 @@
                                 (click)="incidenciaSeleccionada = null">Cancelar</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== VISTA: GESTIÓN DE USUARIOS ===================== -->
+    <div *ngIf="vistaActiva === 'usuarios'" class="row g-4">
+        <div class="col-12 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="card-title mb-0 fw-semibold">Registrar Nuevo Usuario</h5>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="mensajeUsuario" class="alert alert-success py-2">{{ mensajeUsuario }}</div>
+                    <div *ngIf="mensajeErrorUsuario" class="alert alert-danger py-2">{{ mensajeErrorUsuario }}</div>
+
+                    <form (ngSubmit)="crearUsuario()">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Nombres</label>
+                            <input type="text" class="form-control" [(ngModel)]="nuevoUsuario.nombres" name="nombres" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Apellidos</label>
+                            <input type="text" class="form-control" [(ngModel)]="nuevoUsuario.apellidos" name="apellidos" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Correo Corporativo</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" [(ngModel)]="nuevoUsuario.correoUsuario"
+                                    name="correoUsuario" placeholder="usuario" required>
+                                <span class="input-group-text">&#64;techsolutions.com</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Contraseña</label>
+                            <input type="password" class="form-control" [(ngModel)]="nuevoUsuario.password" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Teléfono</label>
+                            <input type="text" class="form-control" [(ngModel)]="nuevoUsuario.telefono" name="telefono">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Rol</label>
+                            <select class="form-select" [(ngModel)]="nuevoUsuario.idRol" name="idRol" required>
+                                <option [ngValue]="null" disabled selected>-- Seleccione un rol --</option>
+                                <option *ngFor="let rol of roles" [value]="rol.id_rol">{{ rol.nombre_rol }}</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-semibold">Crear Usuario</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="card-title mb-0 fw-semibold">Usuarios Registrados</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-secondary">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th>Rol</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let u of usuarios">
+                                    <td>#{{ u.idUsuario }}</td>
+                                    <td>{{ u.nombres }} {{ u.apellidos }}</td>
+                                    <td>{{ u.correo }}</td>
+                                    <td>{{ u.telefono || '-' }}</td>
+                                    <td><span class="badge bg-secondary">{{ u.rol?.nombre_rol }}</span></td>
+                                </tr>
+                                <tr *ngIf="usuarios.length === 0">
+                                    <td colspan="5" class="text-center text-muted py-4">No hay usuarios registrados.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== VISTA: REPORTES ===================== -->
+    <div *ngIf="vistaActiva === 'reportes'" class="row g-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold">Reporte General</h5>
+                    <button class="btn btn-danger d-flex align-items-center gap-2" (click)="descargarReporteGeneral()">
+                        Descargar Reporte General (PDF)
+                    </button>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="card-title mb-0 fw-semibold">Reporte de Rendimiento (con Filtros)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Estado</label>
+                            <select class="form-select" [(ngModel)]="filtros.idEstado" name="filtroEstado">
+                                <option [ngValue]="null">Todos</option>
+                                <option *ngFor="let e of estados" [ngValue]="e.id_estado">{{ e.nombre_estado }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Prioridad</label>
+                            <select class="form-select" [(ngModel)]="filtros.idPrioridad" name="filtroPrioridad">
+                                <option [ngValue]="null">Todas</option>
+                                <option *ngFor="let p of prioridades" [ngValue]="p.id_prioridad">{{ p.nombre_prioridad }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Categoría</label>
+                            <select class="form-select" [(ngModel)]="filtros.idCategoria" name="filtroCategoria">
+                                <option [ngValue]="null">Todas</option>
+                                <option *ngFor="let c of categorias" [ngValue]="c.id_categoria">{{ c.nombre_categoria }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Técnico</label>
+                            <select class="form-select" [(ngModel)]="filtros.idTecnico" name="filtroTecnico">
+                                <option [ngValue]="null">Todos</option>
+                                <option *ngFor="let t of tecnicos" [ngValue]="t.idUsuario">{{ t.nombres }} {{ t.apellidos }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Fecha Desde</label>
+                            <input type="date" class="form-control" [(ngModel)]="filtros.fechaDesde" name="fechaDesde">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Fecha Hasta</label>
+                            <input type="date" class="form-control" [(ngModel)]="filtros.fechaHasta" name="fechaHasta">
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button class="btn btn-primary fw-semibold" (click)="descargarReporteFiltrado()">
+                            Descargar Reporte Filtrado (PDF)
+                        </button>
+                        <button class="btn btn-outline-secondary" (click)="limpiarFiltros()">
+                            Limpiar Filtros
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

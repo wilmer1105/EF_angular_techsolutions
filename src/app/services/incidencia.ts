@@ -18,6 +18,10 @@ export class IncidenciaService {
     return this.http.get(`${this.apiUrl}/prioridades`);
   }
 
+  getEstados(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/estados`);
+  }
+
   getIncidenciasByUsuario(idUsuario: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/usuario/${idUsuario}`);
   }
@@ -45,4 +49,7 @@ export class IncidenciaService {
   actualizarEstadoIncidencia(idIncidencia: number, idEstado: number): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${idIncidencia}/estado`, { id_estado: idEstado });
   }
+  actualizarPrioridadIncidencia(idIncidencia: number, idPrioridad: number): Observable<any> {
+  return this.http.put<any>(`${this.apiUrl}/${idIncidencia}/prioridad`, { id_prioridad: idPrioridad });
+}
 }

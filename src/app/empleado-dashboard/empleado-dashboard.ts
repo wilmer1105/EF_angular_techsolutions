@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { IncidenciaService } from '../services/incidencia';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-empleado-dashboard',
@@ -12,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class EmpleadoDashboardComponent implements OnInit {
   idUsuarioActual!: number;
-
+  nombreEmpleado: string = 'Usuario';
   // Datos del formulario
   nuevaIncidencia = {
     titulo: '',
@@ -27,10 +28,14 @@ export class EmpleadoDashboardComponent implements OnInit {
   misIncidencias: any[] = [];
   mensajeConfirmacion: string = '';
 
-  constructor(private incidenciaService: IncidenciaService) { }
+  constructor(private incidenciaService: IncidenciaService, private router: Router) { }
 
   ngOnInit() {
     // Recuperar el ID del usuario logueado
+    const empleadoGuardado = localStorage.getItem('nombre_usuario_logueado');
+    if (empleadoGuardado) {
+      this.nombreEmpleado = empleadoGuardado;
+    }
     const id = localStorage.getItem('id_usuario');
     if (id) {
       this.idUsuarioActual = parseInt(id, 10);
@@ -39,6 +44,11 @@ export class EmpleadoDashboardComponent implements OnInit {
       this.cargarMisIncidencias();
     }
   }
+  // Asegúrate de inyectar 'private router: Router' en tu constructor
+cerrarSesion() {
+  localStorage.clear();
+  this.router.navigate(['/login']);
+}
 
   cargarListasFormulario() {
     this.incidenciaService.getCategorias().subscribe(data => this.categorias = data);
@@ -50,6 +60,7 @@ export class EmpleadoDashboardComponent implements OnInit {
       this.misIncidencias = data; // Al actualizar esta variable, Angular refresca la tabla automáticamente
     });
   }
+  
 
   // ... dentro de EmpleadoDashboardComponent ...
 

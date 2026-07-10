@@ -1,5 +1,19 @@
 <div class="container mt-4">
-    <h2 class="mb-4">Portal de Soporte al Usuario</h2>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary shadow-sm px-4 py-3 mb-4 rounded-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold text-white" href="#">TechSolutions Atención</a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <span class="text-white">Usuario: <strong class="text-warning">{{ nombreEmpleado }}</strong></span>
+                <button class="btn btn-sm btn-light text-primary rounded-pill px-3 fw-semibold"
+                    (click)="cerrarSesion()">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+    </div>
 
     <!-- Formulario de Registro -->
     <div class="card shadow-sm mb-4">
